@@ -1,8 +1,10 @@
 import json
 import pandas as pd
+
 from typing import Union, List
 from pathlib import Path
 from loggers.get_logger import get_logger
+from datetime import datetime
 
 path = "/Users/diat.lov/Downloads/Telegram Desktop/DataExport_2021-11-05/result.json"
 
@@ -56,6 +58,33 @@ class DataRetriever:
         """
         self.logger.info(f"The number of messages: {len(data_list)}")
         return pd.DataFrame(data_list)
+
+    @staticmethod
+    def tg_specific_preprocessing(df: pd.DataFrame) -> pd.DataFrame:
+        mask_kate = df["from"] == "Катя"
+        mask_daria = df["from"] == "Daria Diatlova"
+
+        df.loc[mask_kate, "from"] = "Kate"
+        df.loc[mask_daria, "from"] = "Daria"
+
+        # delete forwarded messages
+        df = df[df['forwarded_from'].isnull()]
+
+        # delete any message types except text messages
+        df = df[df['type'] == 'message']
+        df = df[df['file'].isnull()]
+        df = df[df['contact_information'].isnull()]
+
+        df = df.reset_index(drop=True)
+        date_timestamps = [datetime.fromisoformat(df.date.loc[i]).date() for i in range(df.shape[0])]
+        time_timestamps = [datetime.fromisoformat(df.date.loc[i]).time() for i in range(df.shape[0])]
+        df["date"] = pd.Series(date_timestamps)
+        df["time"] = pd.Series(time_timestamps)
+
+        pd.to_datetime(df.date, format='%Y%m/%d/ %I:%M', errors='ignore')
+        pd.to_datetime(df.time, format='%Y%m/%d/ %I:%M', errors='ignore')
+
+        return df[["id", "date", "time", "from", "text"]]
 
 
 # data_retriever = DataRetriever(path)
