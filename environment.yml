@@ -1,0 +1,10 @@
+# run: conda env update --file=environment.yml
+name: chatbot
+dependencies:
+  - python=3.8.1
+  - numpy
+  - pip
+  - jupyter
+  - jupyterlab
+  - readline
+  - setuptools
