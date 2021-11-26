@@ -13,7 +13,8 @@ logger = get_logger("Dataset")
 class ChatDataset(Dataset):
     def __init__(self, data: List[str], tokenizer):
         logger.info("Tokenizing and building input...")
-        self.tokenized_text = [tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text)) for text in data]
+        self.tokenized_text = [torch.tensor(
+            tokenizer(text, max_length=500, padding='max_length', truncation=True)['input_ids']) for text in data]
 
     def __len__(self):
         return len(self.tokenized_text)
@@ -27,5 +28,5 @@ def get_data_loader(data, tokenizer, batch_size: int, pin_memory: bool = True):
     dataset = ChatDataset(data, tokenizer)
     logger.info("Train dataset: {:,} samples".format(len(dataset)))
     logger.info("Build dataloaders")
-    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=pin_memory, num_workers=2)
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=pin_memory, num_workers=1)
     return data_loader

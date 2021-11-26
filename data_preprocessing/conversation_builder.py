@@ -28,6 +28,8 @@ def create_conversations(df: pd.DataFrame, min_dialoge_len: int = 3, max_dialoge
             else:
                 if message_block:
                     if min_dialoge_len <= len(message_block) <= max_dialoge_len:
+                        message_block.insert(1, "<s>")
+                        message_block.append("</s>")
                         conversations.append(" ".join(message_block[1:]))
                 break
 

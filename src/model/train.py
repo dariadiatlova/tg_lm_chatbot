@@ -1,7 +1,7 @@
 import torch
 import os
 
-from tqdm.asyncio import trange
+from tqdm import trange
 from tqdm import tqdm
 from transformers import AdamW
 
@@ -16,7 +16,7 @@ device = "cpu"
 logger = get_logger("Training")
 
 
-def main(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
+def run(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
          weight_decay: int = 0,
          lr: float = 5e-5,
          adam_epsilon: float = 1e-8,
@@ -27,13 +27,21 @@ def main(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
          save_every: int = 5,
          run_name: str = 'run1'):
 
+    torch.multiprocessing.freeze_support()
+
     all_conversations = get_conversations()
     model = GPT2LMHeadModel.from_pretrained(model_name)
     tokenizer = GPT2Tokenizer.from_pretrained(TOKENIZER_PATH)
+    tokenizer.pad_token = '<pad>'
+    tokenizer.sos_token = '<s>'
+    tokenizer.eos_token = '</s>'
+    tokenizer.unk_token = '<unk>'
+    tokenizer.mask_token = '<mask>'
+    tokenizer.add_special_tokens({'additional_special_tokens': ('<Kate>', '<Daria>')})
 
     data_loader = get_data_loader(all_conversations, tokenizer, batch_size=64)
+
     model.to(device)
-    tokenizer.to(device)
 
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [{
@@ -64,6 +72,7 @@ def main(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
     for current_epoch in epoch_pbar:
         epoch_pbar.set_description(f"Epoch [{current_epoch+1}/{n_epochs}]")
         pbar = tqdm(data_loader, position=0)
+        # RuntimeError: An attempt has been made to start a new process before the current process has finished
         for step, batch in enumerate(pbar):
             # Skip past any already trained steps if resuming training
             if steps_trained_in_current_epoch > 0:
@@ -104,3 +113,7 @@ def main(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
     logger.info(f"Saving model checkpoint to {output_dir}")
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
+
+
+if __name__ == "__main__":
+    run()
