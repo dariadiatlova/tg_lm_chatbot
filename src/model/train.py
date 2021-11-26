@@ -12,7 +12,7 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer, get_linear_schedule_wit
 from data_preprocessing.dataset import get_data_loader
 from loggers.get_logger import get_logger
 
-device = "cpu"
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger = get_logger("Training")
 
 
@@ -39,7 +39,7 @@ def run(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
     tokenizer.mask_token = '<mask>'
     tokenizer.add_special_tokens({'additional_special_tokens': ('<Kate>', '<Daria>')})
 
-    data_loader = get_data_loader(all_conversations, tokenizer, batch_size=64)
+    data_loader = get_data_loader(all_conversations, tokenizer, batch_size=16)
 
     model.to(device)
 
@@ -83,7 +83,8 @@ def run(model_name: str = "sberbank-ai/rugpt3small_based_on_gpt2",
             inputs, labels = (batch, batch)
             inputs = inputs.to(device)
             labels = labels.to(device)
-            loss, *_ = model(inputs, labels=labels)
+            loss = model(inputs, labels=labels)
+            loss = loss[0]
             loss.backward()
             tr_loss = loss.item()
             # Compute a running average of the loss

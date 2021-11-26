@@ -5,6 +5,7 @@ from typing import Union, List
 from pathlib import Path
 from loggers.get_logger import get_logger
 from datetime import datetime
+from data import RESULT_JSON
 
 
 class DataRetriever:
@@ -14,7 +15,7 @@ class DataRetriever:
         self.logger = get_logger("DataRetriever")
 
     @staticmethod
-    def read_json(path: str = path):
+    def read_json(path: str = RESULT_JSON):
         return json.load(open(Path(path)))
 
     def file_structure(self, field: str = None):
