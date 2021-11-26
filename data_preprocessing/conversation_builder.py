@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import List, Union
 
+from data import RESULT_JSON
 from data_preprocessing.tg_json_reader import DataRetriever
 
 
@@ -39,7 +40,7 @@ def create_conversations(df: pd.DataFrame, min_dialoge_len: int = 3, max_dialoge
     return conversations
 
 
-def get_conversations(path: str = "/Users/diat.lov/Downloads/Telegram Desktop/DataExport_2021-11-05/result.json"):
+def get_conversations(path: str = RESULT_JSON):
     data_retriever = DataRetriever(path)
     dictionary = data_retriever.get_message_history_by_name("Катя")
     df = data_retriever.get_pandas_df(dictionary)

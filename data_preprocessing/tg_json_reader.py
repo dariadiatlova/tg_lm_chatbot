@@ -6,8 +6,6 @@ from pathlib import Path
 from loggers.get_logger import get_logger
 from datetime import datetime
 
-path = "/Users/diat.lov/Downloads/Telegram Desktop/DataExport_2021-11-05/result.json"
-
 
 class DataRetriever:
     def __init__(self, json_file_path: str):
@@ -85,8 +83,3 @@ class DataRetriever:
         pd.to_datetime(df.time, format='%Y%m/%d/ %I:%M', errors='ignore')
 
         return df[["id", "date", "time", "from", "text"]]
-
-
-# data_retriever = DataRetriever(path)
-# dictinoary = data_retriever.get_message_history_by_name("Катя")
-# print(data_retriever.get_pandas_df(dictinoary).columns)
